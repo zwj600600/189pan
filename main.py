@@ -8,10 +8,22 @@ import rsa
 import requests
 import random
 import os
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 # 变量 ty_username（手机号）,ty_password（密码）
-ty_username = os.getenv("TYYP_USERNAME").split('&')
-ty_password = os.getenv("TYYP_PSW").split('&')
+username_env = os.getenv("TYYP_USERNAME")
+password_env = os.getenv("TYYP_PSW")
+
+if not username_env or not password_env:
+    print("错误：环境变量TYYP_USERNAME或TYYP_PSW未设置")
+    print("请确保.env文件存在并包含正确的配置")
+    exit(1)
+
+ty_username = username_env.split('&')
+ty_password = password_env.split('&')
 
 BI_RM = list("0123456789abcdefghijklmnopqrstuvwxyz")
 
