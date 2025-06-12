@@ -6,6 +6,7 @@ import hashlib
 import rsa
 import requests
 import os
+from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 from dotenv import load_dotenv
 
@@ -92,9 +93,10 @@ class CryptoUtils:
 class TianYiCloudBot:
     """天翼云盘自动签到抽奖机器人"""
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, account_id: str = ""):
         self.username = username
         self.password = password
+        self.account_id = account_id or f"账户{username[:3]}***"
         self.session = requests.Session()
 
     def _extract_login_params(self, html: str) -> Dict[str, str]:
@@ -173,12 +175,10 @@ class TianYiCloudBot:
 
             result = response.json()
             if result['result'] == 0:
-                print(result['msg'])
                 # 访问重定向URL完成登录
                 self.session.get(result['toUrl'])
                 return True
             else:
-                print(f"登录失败: {result['msg']}")
                 return False
 
         except Exception as e:
@@ -199,11 +199,10 @@ class TianYiCloudBot:
             is_signed = result.get('isSign', False)
 
             if is_signed:
-                message = f"已经签到过了，签到获得{netdisk_bonus}M空间"
+                message = f"已签到，获得{netdisk_bonus}M空间"
             else:
-                message = f"签到成功，签到获得{netdisk_bonus}M空间"
+                message = f"签到成功，获得{netdisk_bonus}M空间"
 
-            print(message)
             return True, message
 
         except Exception as e:
@@ -218,13 +217,11 @@ class TianYiCloudBot:
             data = response.json()
 
             if "errorCode" in data:
-                message = f"第{round_num}次抽奖失败，可能是次数不足了"
-                print(message)
+                message = f"抽奖失败，次数不足"
                 return False, message
             else:
                 prize_name = data.get("prizeName", "未知奖品")
-                message = f"第{round_num}次抽奖成功：获得{prize_name}"
-                print(message)
+                message = f"抽奖成功，获得{prize_name}"
                 return True, message
 
         except Exception as e:
@@ -235,7 +232,7 @@ class TianYiCloudBot:
     def run(self) -> Dict[str, str]:
         """执行完整的签到抽奖流程"""
         results = {
-            'username': self.username,
+            'account_id': self.account_id,
             'login': '',
             'sign_in': '',
             'draws': []
@@ -287,29 +284,55 @@ def load_accounts() -> List[Tuple[str, str]]:
 
 def main():
     """主程序"""
-    print("=== 天翼云盘自动签到抽奖程序 ===")
+    # 记录开始时间
+    start_time = datetime.now()
+
+    print("# 天翼云盘自动签到抽奖程序")
+    print()
 
     # 加载账户信息
     accounts = load_accounts()
-    print(f"共加载 {len(accounts)} 个账户")
+    print(f"## 执行概览")
+    print(f"- **启动时间**: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"- **账户数量**: {len(accounts)} 个")
+    print()
 
     # 处理每个账户
     for i, (username, password) in enumerate(accounts, 1):
-        print(f"\n--- 开始执行账户 {i}: {username} ---")
+        account_id = f"账户{i}"
+        print(f"## {account_id}")
 
-        bot = TianYiCloudBot(username, password)
+        bot = TianYiCloudBot(username, password, account_id)
         results = bot.run()
 
         # 输出结果摘要
-        print(f"\n账户 {username} 执行结果:")
-        print(f"登录: {results['login']}")
-        print(f"签到: {results['sign_in']}")
-        for j, draw_result in enumerate(results['draws'], 1):
-            print(f"抽奖{j}: {draw_result}")
+        print(f"### 执行结果")
+        print(f"- **登录状态**: {results['login']}")
+        print(f"- **签到结果**: {results['sign_in']}")
 
-        print("-" * 50)
+        # 抽奖结果
+        if results['draws']:
+            print(f"- **抽奖结果**:")
+            for j, draw_result in enumerate(results['draws'], 1):
+                # 提取关键信息，去除重复的"第X次"
+                clean_result = draw_result.replace(f"第{j}次", "").strip()
+                if "成功" in draw_result:
+                    print(f"  - 🎉 第{j}次: {clean_result}")
+                else:
+                    print(f"  - ❌ 第{j}次: {clean_result}")
 
-    print("所有账户处理完成！")
+        print()
+
+    # 记录结束时间并计算运行时间
+    end_time = datetime.now()
+    duration = end_time - start_time
+
+    print("---")
+    print("## 执行统计")
+    print(f"- **结束时间**: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"- **运行时长**: {duration.total_seconds():.2f} 秒")
+    print()
+    print("✅ **所有账户处理完成！**")
 
 
 if __name__ == "__main__":
