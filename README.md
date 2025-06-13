@@ -2,9 +2,9 @@
 
 ###### 本项目fork自[Cloud189_Action](https://github.com/qsf728999746/Cloud189_Action)（在此感谢）并修复和改进以下内容：
 
-1. 每天两次签到，当第一次签到时，未正常显示“抽奖获得的容量数”，原代码仅显示“抽奖获得1” 修复状态：✅
+1. 每天两次签到，当第一次签到时，未正常显示"抽奖获得的容量数"，原代码仅显示"抽奖获得1" 修复状态：✅
 
-2. 每天两次签到，当第二次签到时，未正常显示“抽奖获得的容量数”，原代码仅显示
+2. 每天两次签到，当第二次签到时，未正常显示"抽奖获得的容量数"，原代码仅显示
 ```
 {"errorCode":"User_Not_Chance","errorMsg":"sessionKey=马赛克,activityId=ACT_SIGNIN,ExcuteOverLimitedNumError!"}
 ```
@@ -12,4 +12,7 @@
 
 3. 将每日签到和抽奖数据直接通过GitHub pages展示 改进状态：✔️
 
-## 具体使用[方法](https://github.com/y377/189pan/wiki)
+## 使用指南
+
+- [详细使用方法](https://github.com/y377/189pan/wiki)
+- [GitHub Actions配置教程](action.md)
